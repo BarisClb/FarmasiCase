@@ -29,7 +29,7 @@ namespace FarmasiCase.WebAPI.Controllers
         {
             string? jwt = Request.Cookies[$"jwtUser"];
             if (jwt == null)
-                return Ok(new { success = false, message = "Cookie does not exist." });
+                return Ok(new { success = false, message = "You need to login to Order." });
 
             await _orderService.Create(jwt);
             return Ok(new { success = true, message = $"Order created." });
