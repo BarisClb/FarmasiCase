@@ -8,14 +8,14 @@ namespace FarmasiCase.Service.RabbitMQ
 {
     public static class GenericActionMethod
     {
-        public static async Task SendMessageViaRabbitMQ(string message, string exchangeName)
+        public static async Task SendMessageViaRabbitMQ(string message, string exchangeName, string queueName)
         {
             var @event = new GenericActionMessageEvent()
             {
                 Message = message
             };
 
-            QueueFactory.SendMessageToExchange(exchangeName, "direct", "AccountExchange", @event);
+            QueueFactory.SendMessageToExchange(exchangeName, "direct", queueName, @event);
         }
     }
 }

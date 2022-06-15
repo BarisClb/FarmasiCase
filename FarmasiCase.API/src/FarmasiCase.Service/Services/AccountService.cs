@@ -36,7 +36,7 @@ namespace FarmasiCase.Service.Services
             string jwt = await _jwtService.GenerateJwt(userReadDto.Id);
 
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("Login successful.", "AccountExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("Login successful.", "AccountLoginExchange", "AccountQueue");
             return jwt;
         }
 

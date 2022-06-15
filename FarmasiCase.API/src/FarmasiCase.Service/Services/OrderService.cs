@@ -54,14 +54,14 @@ namespace FarmasiCase.Service.Services
         {
             // Interrupting return to SendMessage
             var list = await _ordersCollection.Find(new BsonDocument()).ToListAsync();
-            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderList successful.", "OrderExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderList successful.", "GetOrderListExchange", "OrderQueue");
             return list;
         }
 
         public async Task<Order<ProductRedisDto>> GetById(string orderId)
         {
             var order = await _ordersCollection.Find(order => order.Id == orderId).FirstOrDefaultAsync();
-            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderById successful.", "OrderExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderById successful.", "GetOrderByIdExchange", "OrderQueue");
             return order;
         }
 
@@ -91,7 +91,7 @@ namespace FarmasiCase.Service.Services
             // Clear the cart
             await _cartService.ClearCart();
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("CreateOrder successful.", "OrderExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("CreateOrder successful.", "CreateOrderExchange", "OrderQueue");
             return;
         }
 
@@ -101,7 +101,7 @@ namespace FarmasiCase.Service.Services
             order.Status = status;
             await _ordersCollection.ReplaceOneAsync(order => order.Id == orderId, order);
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateOrder successful.", "OrderExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateOrder successful.", "UpdateOrderExchange","OrderQueue");
             return;
         }
 
@@ -109,7 +109,7 @@ namespace FarmasiCase.Service.Services
         {
             await _ordersCollection.DeleteOneAsync(order => order.Id == orderId);
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteOrder successful.", "OrderExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteOrder successful.", "DeleteOrderExchange", "OrderQueue");
             return;
         }
 

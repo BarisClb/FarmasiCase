@@ -37,7 +37,7 @@ namespace FarmasiCase.Service.Services
                 throw new Exception("Cart is empty.");
 
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("GetCart successful.", "CartExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetCart successful.", "GetCartListExchange", "CartQueue");
             return cache;
         }
 
@@ -64,7 +64,7 @@ namespace FarmasiCase.Service.Services
                 };
                 await _cache.SetRecordAsync(recordKey, newCartList);
 
-                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new Cart).", "CartExchange");
+                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new Cart).", "AddProductToCartExchange", "CartQueue");
                 return;
             }
 
@@ -86,7 +86,7 @@ namespace FarmasiCase.Service.Services
                 cache.Add(newProductRedisDto);
                 await _cache.SetRecordAsync(recordKey, cache);
 
-                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new item).", "CartExchange");
+                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new item).", "AddProductToCartExchange", "CartQueue");
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace FarmasiCase.Service.Services
             await _cache.SetRecordAsync(recordKey, cache);
 
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("ReduceProductFromCart successful.", "CartExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("ReduceProductFromCart successful.", "ReduceProductFromCartExchange", "CartQueue");
             return;
         }
 
@@ -146,7 +146,7 @@ namespace FarmasiCase.Service.Services
             await _cache.SetRecordAsync(recordKey, cache);
 
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("RemoveProductFromCart successful.", "CartExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("RemoveProductFromCart successful.", "RemoveProductFromCartExchange", "CartQueue");
             return;
         }
 
@@ -154,7 +154,7 @@ namespace FarmasiCase.Service.Services
         {
             await _cache.SetRecordAsync<ProductRedisDto>(recordKey, null);
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("ClearCart successful.", "CartExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("ClearCart successful.", "ClearCartExchange", "CartQueue");
             return;
         }
     }

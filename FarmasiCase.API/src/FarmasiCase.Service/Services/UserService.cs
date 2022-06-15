@@ -38,7 +38,7 @@ namespace FarmasiCase.Service.Services
         public async Task<List<User>> Get()
         {
             var list = await _usersCollection.Find(new BsonDocument()).ToListAsync();
-            await GenericActionMethod.SendMessageViaRabbitMQ("GetUserList successful.", "UserExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetUserList successful.", "GetUserListExchange", "UserQueue");
             return list;
         }
 
@@ -49,7 +49,7 @@ namespace FarmasiCase.Service.Services
             if (user == null)
                 throw new Exception("User not found.");
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("GetUser successful.", "UserExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetUser successful.", "GetUserByIdExchange", "UserQueue");
             return user;
         }
 
@@ -57,7 +57,7 @@ namespace FarmasiCase.Service.Services
         {
             await _usersCollection.InsertOneAsync(_mapper.Map<UserCreateDto, User>(newUserDto));
 
-            await GenericActionMethod.SendMessageViaRabbitMQ("CreateUser successful.", "UserExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("CreateUser successful.", "CreateUserExchange", "UserQueue");
             return newUserDto;
         }
 
@@ -75,7 +75,7 @@ namespace FarmasiCase.Service.Services
                 user.Password = updatedUserDto.Password;
 
             await _usersCollection.ReplaceOneAsync(user => user.Id == updatedUserDto.Id, user);
-            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateUser successful.", "UserExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateUser successful.", "UpdateUserExchange", "UserQueue");
             return user;
         }
 
@@ -84,7 +84,7 @@ namespace FarmasiCase.Service.Services
             User user = await GetById(userId);
 
             await _usersCollection.DeleteOneAsync(user => user.Id == userId);
-            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteUser successful.", "UserExchange");
+            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteUser successful.", "DeleteUserExchange", "UserQueue");
             return;
         }
     }
