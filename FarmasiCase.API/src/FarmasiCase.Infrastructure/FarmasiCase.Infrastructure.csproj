@@ -17,4 +17,8 @@
     <ProjectReference Include="..\FarmasiCase.Service\FarmasiCase.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="RabbitMQ\" />
+  </ItemGroup>
+
 </Project>

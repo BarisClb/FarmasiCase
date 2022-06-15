@@ -3,6 +3,7 @@ using FarmasiCase.Domain.Entities;
 using FarmasiCase.Persistence.Models;
 using FarmasiCase.Service.Dtos.Create;
 using FarmasiCase.Service.Dtos.Update;
+using FarmasiCase.Service.RabbitMQ;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -36,7 +37,9 @@ namespace FarmasiCase.Service.Services
 
         public async Task<List<User>> Get()
         {
-            return await _usersCollection.Find(new BsonDocument()).ToListAsync();
+            var list = await _usersCollection.Find(new BsonDocument()).ToListAsync();
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetUserList successful.", "UserExchange");
+            return list;
         }
 
         public async Task<User> GetById(string userId)
@@ -46,12 +49,15 @@ namespace FarmasiCase.Service.Services
             if (user == null)
                 throw new Exception("User not found.");
 
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetUser successful.", "UserExchange");
             return user;
         }
 
         public async Task<UserCreateDto> Create(UserCreateDto newUserDto)
         {
             await _usersCollection.InsertOneAsync(_mapper.Map<UserCreateDto, User>(newUserDto));
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("CreateUser successful.", "UserExchange");
             return newUserDto;
         }
 
@@ -69,6 +75,7 @@ namespace FarmasiCase.Service.Services
                 user.Password = updatedUserDto.Password;
 
             await _usersCollection.ReplaceOneAsync(user => user.Id == updatedUserDto.Id, user);
+            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateUser successful.", "UserExchange");
             return user;
         }
 
@@ -77,6 +84,7 @@ namespace FarmasiCase.Service.Services
             User user = await GetById(userId);
 
             await _usersCollection.DeleteOneAsync(user => user.Id == userId);
+            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteUser successful.", "UserExchange");
             return;
         }
     }

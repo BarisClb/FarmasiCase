@@ -5,6 +5,7 @@ using FarmasiCase.Service.Contracts;
 using FarmasiCase.Service.Dtos.Create;
 using FarmasiCase.Service.Dtos.Read;
 using FarmasiCase.Service.Dtos.Redis;
+using FarmasiCase.Service.RabbitMQ;
 using FarmasiCase.Service.Redis;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -51,12 +52,17 @@ namespace FarmasiCase.Service.Services
 
         public async Task<List<Order<ProductRedisDto>>> Get()
         {
-            return await _ordersCollection.Find(new BsonDocument()).ToListAsync();
+            // Interrupting return to SendMessage
+            var list = await _ordersCollection.Find(new BsonDocument()).ToListAsync();
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderList successful.", "OrderExchange");
+            return list;
         }
 
         public async Task<Order<ProductRedisDto>> GetById(string orderId)
         {
-            return await _ordersCollection.Find(order => order.Id == orderId).FirstOrDefaultAsync();
+            var order = await _ordersCollection.Find(order => order.Id == orderId).FirstOrDefaultAsync();
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetOrderById successful.", "OrderExchange");
+            return order;
         }
 
 
@@ -82,7 +88,10 @@ namespace FarmasiCase.Service.Services
 
             await _ordersCollection.InsertOneAsync(_mapper.Map<OrderCreateDto<ProductRedisDto>, Order<ProductRedisDto>>(newOrder));
 
+            // Clear the cart
             await _cartService.ClearCart();
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("CreateOrder successful.", "OrderExchange");
             return;
         }
 
@@ -91,12 +100,16 @@ namespace FarmasiCase.Service.Services
             Order<ProductRedisDto> order = await _ordersCollection.Find(order => order.Id == orderId).FirstOrDefaultAsync();
             order.Status = status;
             await _ordersCollection.ReplaceOneAsync(order => order.Id == orderId, order);
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateOrder successful.", "OrderExchange");
             return;
         }
 
         public async Task DeleteAsync(string orderId)
         {
             await _ordersCollection.DeleteOneAsync(order => order.Id == orderId);
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteOrder successful.", "OrderExchange");
             return;
         }
 

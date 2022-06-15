@@ -1,6 +1,7 @@
 ﻿using FarmasiCase.Domain.Entities;
 using FarmasiCase.Persistence.Models;
 using FarmasiCase.Service.Dtos.Redis;
+using FarmasiCase.Service.RabbitMQ;
 using FarmasiCase.Service.Redis;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -35,6 +36,8 @@ namespace FarmasiCase.Service.Services
             if (cache == null)
                 throw new Exception("Cart is empty.");
 
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetCart successful.", "CartExchange");
             return cache;
         }
 
@@ -60,6 +63,8 @@ namespace FarmasiCase.Service.Services
                     newProductRedisDto
                 };
                 await _cache.SetRecordAsync(recordKey, newCartList);
+
+                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new Cart).", "CartExchange");
                 return;
             }
 
@@ -80,6 +85,8 @@ namespace FarmasiCase.Service.Services
                 };
                 cache.Add(newProductRedisDto);
                 await _cache.SetRecordAsync(recordKey, cache);
+
+                await GenericActionMethod.SendMessageViaRabbitMQ("AddProductToCart successful(Created new item).", "CartExchange");
                 return;
             }
 
@@ -112,6 +119,9 @@ namespace FarmasiCase.Service.Services
 
 
             await _cache.SetRecordAsync(recordKey, cache);
+
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("ReduceProductFromCart successful.", "CartExchange");
             return;
         }
 
@@ -134,12 +144,17 @@ namespace FarmasiCase.Service.Services
 
 
             await _cache.SetRecordAsync(recordKey, cache);
+
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("RemoveProductFromCart successful.", "CartExchange");
             return;
         }
 
         public async Task ClearCart()
         {
             await _cache.SetRecordAsync<ProductRedisDto>(recordKey, null);
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("ClearCart successful.", "CartExchange");
             return;
         }
     }

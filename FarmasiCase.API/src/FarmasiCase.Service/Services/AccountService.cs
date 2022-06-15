@@ -3,6 +3,7 @@ using FarmasiCase.Domain.Entities;
 using FarmasiCase.Service.Contracts;
 using FarmasiCase.Service.Dtos.Account;
 using FarmasiCase.Service.Dtos.Read;
+using FarmasiCase.Service.RabbitMQ;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -35,6 +36,7 @@ namespace FarmasiCase.Service.Services
             string jwt = await _jwtService.GenerateJwt(userReadDto.Id);
 
 
+            await GenericActionMethod.SendMessageViaRabbitMQ("Login successful.", "AccountExchange");
             return jwt;
         }
 

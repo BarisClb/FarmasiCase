@@ -3,6 +3,7 @@ using FarmasiCase.Domain.Entities;
 using FarmasiCase.Persistence.Models;
 using FarmasiCase.Service.Dtos.Create;
 using FarmasiCase.Service.Dtos.Update;
+using FarmasiCase.Service.RabbitMQ;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -36,7 +37,9 @@ namespace FarmasiCase.Service.Services
 
         public async Task<List<Product>> Get()
         {
-            return await _productsCollection.Find(new BsonDocument()).ToListAsync();
+            var list = await _productsCollection.Find(new BsonDocument()).ToListAsync();
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetProductList successful.", "ProductExchange");
+            return list;
         }
 
         public async Task<Product> GetById(string productId)
@@ -46,12 +49,15 @@ namespace FarmasiCase.Service.Services
             if (product == null)
                 throw new Exception("Product not found.");
 
+            await GenericActionMethod.SendMessageViaRabbitMQ("GetProduct successful.", "ProductExchange");
             return product;
         }
 
         public async Task<ProductCreateDto> Create(ProductCreateDto newProductDto)
         {
             await _productsCollection.InsertOneAsync(_mapper.Map<ProductCreateDto, Product>(newProductDto));
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("CreateProduct successful.", "ProductExchange");
             return newProductDto;
         }
 
@@ -69,6 +75,8 @@ namespace FarmasiCase.Service.Services
                 product.Price = (int)updatedProductDto.Price;
 
             await _productsCollection.ReplaceOneAsync(product => product.Id == updatedProductDto.Id, product);
+
+            await GenericActionMethod.SendMessageViaRabbitMQ("UpdateProduct successful.", "ProductExchange");
             return product;
         }
 
@@ -77,6 +85,7 @@ namespace FarmasiCase.Service.Services
             Product product = await GetById(productId);
 
             await _productsCollection.DeleteOneAsync(product => product.Id == productId);
+            await GenericActionMethod.SendMessageViaRabbitMQ("DeleteProduct successful.", "ProductExchange");
             return;
         }
     }
