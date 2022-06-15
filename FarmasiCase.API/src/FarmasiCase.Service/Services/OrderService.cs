@@ -27,9 +27,10 @@ namespace FarmasiCase.Service.Services
         private readonly UserService _userService;
         private readonly IDistributedCache _cache;
         private readonly IMapper _mapper;
+        private readonly CartService _cartService;
 
         public OrderService(
-            IOptions<FarmasiCaseSettings> farmasiCaseSettings, IJwtService jwtService, UserService userService, IDistributedCache cache, IMapper mapper)
+            IOptions<FarmasiCaseSettings> farmasiCaseSettings, IJwtService jwtService, UserService userService, IDistributedCache cache, IMapper mapper, CartService cartService)
         {
             var mongoClient = new MongoClient(
                 farmasiCaseSettings.Value.ConnectionString);
@@ -44,6 +45,7 @@ namespace FarmasiCase.Service.Services
             _userService = userService;
             _cache = cache;
             _mapper = mapper;
+            _cartService = cartService;
         }
 
 
@@ -79,6 +81,8 @@ namespace FarmasiCase.Service.Services
 
 
             await _ordersCollection.InsertOneAsync(_mapper.Map<OrderCreateDto<ProductRedisDto>, Order<ProductRedisDto>>(newOrder));
+
+            await _cartService.ClearCart();
             return;
         }
 

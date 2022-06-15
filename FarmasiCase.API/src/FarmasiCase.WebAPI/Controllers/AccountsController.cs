@@ -40,7 +40,7 @@ namespace FarmasiCase.WebAPI.Controllers
         {
             string? jwt = Request.Cookies[$"jwtUser"];
             if (jwt == null)
-                return Ok(new { success = false, message = "Cookie does not exist." });
+                return Ok(new { success = false, message = "You are not logged in." });
 
             Response.Cookies.Delete($"jwtUser", new CookieOptions
             {
@@ -58,7 +58,7 @@ namespace FarmasiCase.WebAPI.Controllers
         {
             string? jwt = Request.Cookies[$"jwtUser"];
             if (jwt == null)
-                return Ok(new { success = false, message = "Cookie does not exist." });
+                return Ok(new { success = false, message = "You are not logged in." });
 
             return Ok(await _accountService.Verify(jwt));
         }

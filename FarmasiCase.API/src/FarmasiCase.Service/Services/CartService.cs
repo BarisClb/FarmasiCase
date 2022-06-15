@@ -136,5 +136,11 @@ namespace FarmasiCase.Service.Services
             await _cache.SetRecordAsync(recordKey, cache);
             return;
         }
+
+        public async Task ClearCart()
+        {
+            await _cache.SetRecordAsync<ProductRedisDto>(recordKey, null);
+            return;
+        }
     }
 }

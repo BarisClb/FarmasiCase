@@ -29,10 +29,17 @@ namespace FarmasiCase.WebAPI.Controllers
         {
             string? jwt = Request.Cookies[$"jwtUser"];
             if (jwt == null)
-                return Ok(new { success = false, message = "You need to login to Order." });
+                return Ok(new { success = false, message = "You need to login first in order to create Order." });
 
             await _orderService.Create(jwt);
             return Ok(new { success = true, message = $"Order created." });
+        }
+
+        [HttpPut("UpdateOrder/{orderId}")]
+        public async Task<IActionResult> Put(string orderId, string status)
+        {
+            await _orderService.UpdateAsync(orderId, status);
+            return Ok(new { success = true, message = $"Order updated." });
         }
 
         [HttpDelete("DeleteOrder/{orderId}")]
@@ -40,7 +47,7 @@ namespace FarmasiCase.WebAPI.Controllers
         {
             await _orderService.DeleteAsync(orderId);
 
-            return Ok("Order deleted.");
+            return Ok(new { success = true, message = $"Order deleted." });
         }
     }
 }

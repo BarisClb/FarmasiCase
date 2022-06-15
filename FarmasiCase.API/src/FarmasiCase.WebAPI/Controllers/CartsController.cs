@@ -27,21 +27,28 @@ namespace FarmasiCase.WebAPI.Controllers
         public async Task<IActionResult> Post(string productId)
         {
             await _cartService.AddProductToCart(productId);
-            return Ok("Product added to cart.");
+            return Ok(new { success = true, message = $"Product added to cart." });
         }
 
         [HttpPost("ReduceProductToCart/{productId}")]
         public async Task<IActionResult> Put(string productId)
         {
             await _cartService.ReduceProductFromCart(productId);
-            return Ok("Cart updated.");
+            return Ok(new { success = true, message = $"Cart updated." });
         }
 
         [HttpDelete("RemoveProductFromCart/{productId}")]
         public async Task<IActionResult> Delete(string productId)
         {
             await _cartService.RemoveProductFromCart(productId);
-            return Ok("Product removed from Cart.");
+            return Ok(new { success = true, message = $"Product removed from Cart." });
+        }
+
+        [HttpDelete("ClearCart")]
+        public async Task<IActionResult> ClearCart()
+        {
+            await _cartService.ClearCart();
+            return Ok(new { success = true, message = $"Cart cleared." });
         }
     }
 }
